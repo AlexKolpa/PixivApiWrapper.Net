@@ -504,7 +504,7 @@ namespace PixivAPIWrapper
         {
             return this.GetSizeById(Type.member_illust, userId);
         }
-
+        
         /// <summary>
         /// Returns all images of the specified user's page.
         /// </summary>
@@ -521,7 +521,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="userId">The user from which to select the images</param>
         /// <returns>An array of all images by the user</returns>
-        public Illustration[] GetImages(int userId)
+        public Illustration[] GetAllImages(int userId)
         {
             return null;
         }
@@ -800,7 +800,7 @@ namespace PixivAPIWrapper
                 while (!parser.EndOfData)
                 {
                     string[] row = parser.ReadFields();
-                    User user = new User(this, row);
+                    User user = PixivObjectFactory.CreateUser(row);
                     ret.Add(user);
                 }
             }

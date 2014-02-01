@@ -12,7 +12,7 @@ namespace PixivAPIWrapper
     /// </summary>
     class PixivObjectFactory
     {
-        public class ItemTransferObject
+        internal class ItemTransferObject
         {
             public int Id { get; set; }
             public int AuthorId { get; set; }
@@ -26,7 +26,7 @@ namespace PixivAPIWrapper
             public string Caption { get; set; }
         }
 
-        public class IllustrationTransferObject : ItemTransferObject
+        internal class IllustrationTransferObject : ItemTransferObject
         {
             public string Extension { get; set; }
             public string Server { get; set; }
@@ -37,13 +37,13 @@ namespace PixivAPIWrapper
             public Uri ImageUrl { get; set; }
         }
 
-        public class MangaTransferObject : IllustrationTransferObject
+        internal class MangaTransferObject : IllustrationTransferObject
         {
             public Uri[] ImageUrls { get; set; }
             public int PageCount { get; set; }
         }
 
-        public class NovelTransferObject : ItemTransferObject
+        internal class NovelTransferObject : ItemTransferObject
         {
             public bool IsDefaultCover { get; set; }
             public string Extension { get; set; }
@@ -53,7 +53,17 @@ namespace PixivAPIWrapper
             public Uri TextUrl { get; set; }
         }
 
-        public static Novel CreateNovel(string[] novelData)
+        internal static User CreateUser(string[] userData)
+        {
+            int id = int.Parse(userData[1]);
+            string name = userData[5];
+            Uri thumbnail = new Uri(userData[6]);
+            string ename = userData[24];
+
+            return new User(id, name, null, ename, thumbnail);
+        }
+
+        internal static Novel CreateNovel(string[] novelData)
         {
             NovelTransferObject obj = new NovelTransferObject();
             SetNovelValues(novelData, obj);
@@ -61,7 +71,7 @@ namespace PixivAPIWrapper
             return new Novel(obj);
         }
         
-        public static Illustration CreateIllust(string[] illustData)
+        internal static Illustration CreateIllust(string[] illustData)
         {
             IllustrationTransferObject obj = new IllustrationTransferObject();
             SetIllustrationValues(illustData, obj);
@@ -70,7 +80,7 @@ namespace PixivAPIWrapper
             return new Illustration(obj);
         }
 
-        public static Manga CreateManga(string[] mangaData)
+        internal static Manga CreateManga(string[] mangaData)
         {
             MangaTransferObject obj = new MangaTransferObject();
             SetMangaValues(mangaData, obj);
@@ -141,7 +151,7 @@ namespace PixivAPIWrapper
 
             string tags_org = data[13];
             List<Tag> tags = new List<Tag>();
-            string[] tags_tmp = tags_org.Split(',');
+            string[] tags_tmp = tags_org.Split(' ');
             foreach (string tag_s in tags_tmp)
             {
                 Tag tag = new Tag(tag_s);

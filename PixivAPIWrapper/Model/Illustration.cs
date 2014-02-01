@@ -15,7 +15,7 @@ namespace PixivAPIWrapper.Model
             string ext, string server, Uri thumbUrl, Uri mobileUrl, string tool, Uri imageUrl, Uri pageUrl) 
             : base(id, authorId, title, authorName, date, tags, point, feedback, views, caption)
         {
-            Ext = ext;
+            Extension = ext;
             Server = server;
             ThumbURL = thumbUrl;
             MobileURL = mobileUrl;
@@ -27,7 +27,7 @@ namespace PixivAPIWrapper.Model
         internal Illustration(PixivObjectFactory.IllustrationTransferObject obj)
             :base(obj)
         {
-            Ext = obj.Extension;
+            Extension = obj.Extension;
             Server = obj.Server;
             ThumbURL = obj.ThumbUrl;
             MobileURL = obj.MobileUrl;
@@ -36,7 +36,7 @@ namespace PixivAPIWrapper.Model
             PageURL = obj.PageUrl;
         }
 
-        public string Ext { get; protected set; }
+        public string Extension { get; protected set; }
         public string Server { get; protected set; }
         public Uri ThumbURL { get; protected set; }
         public Uri MobileURL { get; protected set; }

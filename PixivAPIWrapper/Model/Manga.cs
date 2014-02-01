@@ -33,24 +33,5 @@ namespace PixivAPIWrapper.Model
 
         public Uri[] ImageURLs { get; protected set; }
         public int PageCount { get; protected set; }
-
-        /*public Manga(string[] data)
-            : base(data)
-        {
-            this.PageCount = int.Parse(data[19]);
-
-            string rawMobileURL = this.MobileURL.ToString();
-            List<Uri> urls = new List<Uri>();
-            string big = (this.Id > 10000000) ? "_big" : "";
-            for (int i = 0; i < this.PageCount; i++)
-            {
-                // Pixivの漫画、原寸サイズのファイル名が、1000万を境に切り替わっているらしい・・・？
-                // 1000万以前は、「_big」がついていないようだ。
-                Uri aPage = new Uri(String.Format("{0}{1}{2}_p{3}.{4}", rawMobileURL.Substring(0, rawMobileURL.LastIndexOf("mobile")), this.Id, big, i, this.Ext));
-                urls.Add(aPage);
-            }
-            this.ImageURLs = urls.ToArray();
-            this.ImageURL = this.ImageURLs[0];
-        }*/
     }
 }

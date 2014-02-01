@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PixivAPIWrapper
+namespace PixivAPIWrapper.Model
 {
     /// <summary>
     /// 「マンガ」を表すクラスです。
@@ -11,20 +11,38 @@ namespace PixivAPIWrapper
     /// <remarks>
     /// Illustとは違い、imageURLsにフルサイズの画像のURLが格納されています。
     /// </remarks>
-    public class Manga : Image
+    public class Manga : Illustration
     {
-        public Uri[] ImageURLs { get; protected set; }
-        public int Pages { get; protected set; }
+        public Manga(int id, int authorId, string title, string authorName, string date, 
+            Tag[] tags, int point, int feedback, int views, string caption, 
+            string ext, string server, Uri thumbUrl, Uri mobileUrl, string tool, 
+            Uri imageUrl, Uri pageUrl , Uri[] imageUrLs, int pageCount) 
+            : base(id, authorId, title, authorName, date, tags, point, 
+            feedback, views, caption, ext, server, thumbUrl, mobileUrl, tool, imageUrl, pageUrl)
+        {
+            ImageURLs = imageUrLs;
+            PageCount = pageCount;
+        }
 
-        public Manga(string[] data)
+        internal Manga(PixivObjectFactory.MangaTransferObject obj)
+            :base(obj)
+        {
+            ImageURLs = obj.ImageUrls;
+            PageCount = obj.PageCount;
+        }
+
+        public Uri[] ImageURLs { get; protected set; }
+        public int PageCount { get; protected set; }
+
+        /*public Manga(string[] data)
             : base(data)
         {
-            this.Pages = int.Parse(data[19]);
+            this.PageCount = int.Parse(data[19]);
 
             string rawMobileURL = this.MobileURL.ToString();
             List<Uri> urls = new List<Uri>();
             string big = (this.Id > 10000000) ? "_big" : "";
-            for (int i = 0; i < this.Pages; i++)
+            for (int i = 0; i < this.PageCount; i++)
             {
                 // Pixivの漫画、原寸サイズのファイル名が、1000万を境に切り替わっているらしい・・・？
                 // 1000万以前は、「_big」がついていないようだ。
@@ -33,6 +51,6 @@ namespace PixivAPIWrapper
             }
             this.ImageURLs = urls.ToArray();
             this.ImageURL = this.ImageURLs[0];
-        }
+        }*/
     }
 }

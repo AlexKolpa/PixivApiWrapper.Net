@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web;
+using PixivAPIWrapper.Model;
 
 namespace PixivAPIWrapper
 {
@@ -158,7 +159,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">The page from which to retrieve the new images</param>
         /// <returns>An array of the new images</returns>
-        public Image[] GetNewImages(int page)
+        public Illustration[] GetNewImages(int page)
         {
             return this.GetImages(Type.new_illust, DummyParameter, page);
         }
@@ -196,7 +197,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetMyPixivNewImages(int page)
+        public Illustration[] GetMyPixivNewImages(int page)
         {
             return this.GetImages(Type.mypixiv_new_illust, DummyParameter, page);
         }
@@ -234,7 +235,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetBookmarkedUserNewImages(int page)
+        public Illustration[] GetBookmarkedUserNewImages(int page)
         {
             return this.GetImages(Type.bookmark_user_new_illust, DummyParameter, page);
         }
@@ -272,7 +273,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetDailyRankingImages(int page)
+        public Illustration[] GetDailyRankingImages(int page)
         {
             return this.GetImages(Type.ranking, Daily, page);
         }
@@ -310,7 +311,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetWeeklyRankingImages(int page)
+        public Illustration[] GetWeeklyRankingImages(int page)
         {
             return this.GetImages(Type.ranking, Weekly, page);
         }
@@ -348,7 +349,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetMonthlyRankingImages(int page)
+        public Illustration[] GetMonthlyRankingImages(int page)
         {
             return this.GetImages(Type.ranking, Monthly, page);
         }
@@ -367,7 +368,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetMyBookmarkImages(int page)
+        public Illustration[] GetMyBookmarkImages(int page)
         {
             return this.GetImages(Type.bookmark, DummyParameter, page);
         }
@@ -405,7 +406,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="page">取得するページ番号</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] GetMyHideBookmarkImages(int page)
+        public Illustration[] GetMyHideBookmarkImages(int page)
         {
             return this.GetImages(Type.bookmark, Hide, page);
         }
@@ -435,7 +436,7 @@ namespace PixivAPIWrapper
         /// <param name="keyword">問い合わせるキーワード</param>
         /// <param name="size">取得するイラスト数</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] FindImagesByTag(string keyword, int size)
+        public Illustration[] FindImagesByTag(string keyword, int size)
         {
             string param = String.Format("s_mode=s_tag&word={0}", Uri.EscapeUriString(keyword));
             return this.FindImages(param, size);
@@ -447,7 +448,7 @@ namespace PixivAPIWrapper
         /// <param name="keyword">問い合わせるキーワード</param>
         /// <param name="size">取得するイラスト数</param>
         /// <returns>取得したイラストのリスト</returns>
-        public Image[] FindImagesByTitle(string keyword, int size)
+        public Illustration[] FindImagesByTitle(string keyword, int size)
         {
             string param = String.Format("s_mode=s_tc&word=%{0}", Uri.EscapeUriString(keyword));
             return this.FindImages(param, size);
@@ -510,7 +511,7 @@ namespace PixivAPIWrapper
         /// <param name="userId">The user from which to select the images</param>
         /// <param name="page">The page from which to select the images</param>
         /// <returns>A </returns>
-        public Image[] GetImages(int userId, int page)
+        public Illustration[] GetImages(int userId, int page)
         {
             return this.GetImagesByUserId(Type.member_illust, userId, page);
         }
@@ -520,7 +521,7 @@ namespace PixivAPIWrapper
         /// </summary>
         /// <param name="userId">The user from which to select the images</param>
         /// <returns>An array of all images by the user</returns>
-        public Image[] GetImages(int userId)
+        public Illustration[] GetImages(int userId)
         {
             return null;
         }
@@ -605,7 +606,7 @@ namespace PixivAPIWrapper
         /// <param name="userId">ユーザ ID</param>
         /// <param name="page">ページ数</param>
         /// <returns>指定したユーザ ID を持つユーザのブックマーク</returns>
-        public Image[] GetImageBookmarks(int userId, int page)
+        public Illustration[] GetImageBookmarks(int userId, int page)
         {
             return this.GetImagesByUserId(Type.bookmark, userId, page);
         }
@@ -663,16 +664,16 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// Internal function to retrieve an array of <see cref="Image"/> based on the passed <paramref name="param"/> 
+        /// Internal function to retrieve an array of <see cref="Illustration"/> based on the passed <paramref name="param"/> 
         /// and the search <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The search type to look for</param>
         /// <param name="param">Specific Pixiv API parameters to include in the search</param>
         /// <param name="page">The requested page number</param>
-        /// <returns>An array of <see cref="Image"/> that match this description</returns>
-        private Image[] GetImages(Type type, string param, int page)
+        /// <returns>An array of <see cref="Illustration"/> that match this description</returns>
+        private Illustration[] GetImages(Type type, string param, int page)
         {
-            List<Image> ret = new List<Image>();
+            List<Illustration> ret = new List<Illustration>();
             Regex reg = new Regex("\" \"");
             string reqUrl = String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.Session, page);
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(reqUrl);            
@@ -690,14 +691,14 @@ namespace PixivAPIWrapper
                 while (!parser.EndOfData)
                 {
                     string[] row = parser.ReadFields();
-                    Image image;
+                    Illustration image;
                     if (!row[19].Equals(""))
                     {
-                        image = new Manga(row);
+                        image = PixivObjectFactory.CreateManga(row);
                     }
                     else
                     {
-                        image = new Illust(row);
+                        image = PixivObjectFactory.CreateIllust(row);
                     }
                     ret.Add(image);
                 }
@@ -741,7 +742,7 @@ namespace PixivAPIWrapper
                 while (!parser.EndOfData)
                 {
                     string[] row = parser.ReadFields();
-                    Novel novel = new Novel(this, row);
+                    Novel novel = PixivObjectFactory.CreateNovel(row);
                     ret.Add(novel);
                 }
             }
@@ -758,7 +759,7 @@ namespace PixivAPIWrapper
             return ret.ToArray();
         }
 
-        private Image[] GetImagesByUserId(Type type, int id, int page)
+        private Illustration[] GetImagesByUserId(Type type, int id, int page)
         {
             return this.GetImages(type, String.Format(IDParamTemplate, id), page);
         }
@@ -768,12 +769,12 @@ namespace PixivAPIWrapper
             return this.GetNovels(type, String.Format(IDParamTemplate, id), page);
         }
 
-        private Image[] FindImages(string param, int size)
+        private Illustration[] FindImages(string param, int size)
         {
-            List<Image> ret = new List<Image>();
+            List<Illustration> ret = new List<Illustration>();
             for (int i = 0; ret.Count < size; i++)
             {
-                List<Image> sub = this.GetImages(Type.search, param, i).ToList<Image>();
+                List<Illustration> sub = this.GetImages(Type.search, param, i).ToList<Illustration>();
                 if (sub.Count == 0)
                     break;
                 ret.AddRange(sub);
@@ -815,7 +816,7 @@ namespace PixivAPIWrapper
         private User[] GetUsersById(Type type, int id, int page)
         {
             return this.GetUsers(type, String.Format(IDParamTemplate, id), page);
-        }
+        }        
     }
 
 }

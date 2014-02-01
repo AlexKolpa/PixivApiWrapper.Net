@@ -1,4 +1,4 @@
 PixivApiWrapper.Net
 ===================
 
-Fixing this ancient API wrapper with the English documentation
+A rewrite of ancient, non-functional Pixiv Api Wrappers, with English documentation.

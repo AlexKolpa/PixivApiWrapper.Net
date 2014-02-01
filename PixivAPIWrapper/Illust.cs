@@ -10,8 +10,8 @@ namespace PixivAPIWrapper
     /// </summary>
     public class Illust : Image
     {
-        public Illust(PixivAPI api, string[] data)
-            : base(api, data)
+        public Illust(string[] data)
+            : base(data)
         {
             string rawMobileURL = this.MobileURL.ToString();
             this.ImageURL = new Uri(String.Format("{0}{1}.{2}", rawMobileURL.Substring(0, rawMobileURL.LastIndexOf("mobile")), this.Id, this.Ext));

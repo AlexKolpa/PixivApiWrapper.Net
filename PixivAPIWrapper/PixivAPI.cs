@@ -37,53 +37,41 @@ namespace PixivAPIWrapper
             new_illust, mypixiv_new_illust, bookmark_user_new_illust, ranking, search, search_user, bookmark, bookmark_user_all, mypixiv_all, member_illust, new_novel, new_novel_r18, novel_ranking, bookmark_user_new_novel, mypixiv_new_novel, bookmark_novel, member_novel, novel_bookmarks, novel_comments, illust_comments, rating_novel
         }
         /// <summary>
-        /// セッションIDを格納しています。
+        /// Current session ID
         /// </summary>
-        public string session = null;
-
-        private HttpClient pixivClient;
+        public string Session { get; private set; }
 
         /// <summary>
-        /// コンストラクタ
+        /// Constructs a new API object. Session still needs to be instantiated through <see cref="Login"/>
         /// </summary>
         public PixivAPI(){
-            this.session = null;
-            pixivClient = new HttpClient();            
-        }
-
-        public void Close()
-        {
-            pixivClient.Dispose();
+            this.Session = null;          
         }
 
         /// <summary>
-        /// Pixivにログインします
+        /// Logs the user in. This is required for many of the API operations since they rely on the session ID.
         /// </summary>
-        /// <param name="id">PixivのID</param>
-        /// <param name="pass">Pixivのパスワード</param>
-        /// <returns>ログインに成功すればtrue</returns>
+        /// <param name="id">User ID. Can be either their username or e-mail.</param>
+        /// <param name="pass">User password. Is handled over a HTTPS connection and not stored locally.</param>
+        /// <remarks>sorry for the semi-fugly construction, apparently the URL form way of old fails nowadays. 
+        /// At least this is safer...</remarks>
+        /// <returns>Whether the user has been logged in succesfully</returns>
         public bool Login(String id, String pass){
+            //Use empty cookiejar (heh) for retrieval of PHPSESSID
             CookieContainer cookieJar = new CookieContainer();
-            HttpWebRequest prereq = (HttpWebRequest)HttpWebRequest.Create(BasePixivUrl + "login.php");
-            prereq.CookieContainer = cookieJar;
-            HttpWebResponse preres = (HttpWebResponse)prereq.GetResponse();
-
-            cookieJar.Add(new Cookie("visit_ever", "yes") { Domain = prereq.Host });
-
-            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{2}login.php?mode=login&pixiv_id={0}&pass={1}&skip=0", id, pass, BasePixivUrl));
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}login.php", BasePixivUrl));
             req.CookieContainer = cookieJar;
-            req.Method = "POST";
-            req.Referer = BasePixivUrl + "login.php";
-            req.Headers["Origin"] = BasePixivUrl;
-            req.ContentType = "application/x-www-form-urlencoded";
-            req.UserAgent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
-            req.KeepAlive = true;          
 
+            //use post method with form
+            req.Method = "POST";
+            req.ContentType = "application/x-www-form-urlencoded";
+
+            //construct post request form
             StringBuilder postData = new StringBuilder();
             postData.Append("mode="+ HttpUtility.UrlEncode("login") + "&");
             postData.Append("pixiv_id=" + HttpUtility.UrlEncode(id) + "&");
             postData.Append("pass=" + HttpUtility.UrlEncode(pass) + "&");
-            postData.Append("skip=" + HttpUtility.UrlEncode("1")); 
+            postData.Append("skip=" + HttpUtility.UrlEncode("0")); 
 
             ASCIIEncoding ascii = new ASCIIEncoding();
             byte[] postBytes = ascii.GetBytes(postData.ToString());
@@ -95,8 +83,10 @@ namespace PixivAPIWrapper
             postStream.Flush();
             postStream.Close();
 
+            //request login response
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
 
+            //retrieve PHPSESSID from cookies
             Cookie result = null;
             foreach (Cookie cookie in cookieJar.GetCookies(new Uri(BasePixivUrl)))
             {
@@ -108,24 +98,23 @@ namespace PixivAPIWrapper
             }
 
             if(result != null)
-                this.session = result.Value;
+                this.Session = result.Value;
             
-
-            return this.Logined();
+            return this.LoggedIn;
         }
 
         /// <summary>
-        /// Pixivにログイン済みかチェックします
+        /// Returns whether the user is currently logged in based on the session ID
         /// </summary>
         /// <returns></returns>
-        public bool Logined(){
-            return this.session != null;            
+        public bool LoggedIn {
+            get { return this.Session != null; }
         }
 
         /// <summary>
-        /// システム稼働状態を調べます
+        /// Check the API status. Useful for seeing whether Pixiv.net is availabe.
         /// </summary>
-        /// <returns>稼働していればtrue</returns>
+        /// <returns>true if all is good</returns>
         public bool Status()
         {
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}maintenance.php?software-version=1.0", BaseURL));
@@ -135,14 +124,17 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// ユーザーのプロフィールデータを入手します
-        /// </summary>
-        /// <remarks>帰ってくるデータがHTMLだったら、それなりのデータ形式で返したほうがいいかも</remarks>
-        /// <returns>プロフィールデータのテキストデータ</returns>
+        /// Returns an HTML page of the user's profile with general information about them. 
+        /// Returns an empty string if the user is not logged in.
+        /// </summary> 
+        /// <returns>An HTML page</returns>
         public string Profile()
         {
+            if (!this.LoggedIn) 
+                return "";
+
             StreamReader strr;
-            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}profile.php?dummy=0&{1}={2}", BaseURL, this.SessionID, this.session));
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}profile.php?dummy=0&{1}={2}", BaseURL, this.SessionID, this.Session));
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             Stream str = res.GetResponseStream();
             strr = new StreamReader(str, UTF8);
@@ -154,18 +146,18 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// 新着イラスト数を取得する
+        /// Returns the amount of new images on Pixiv. 
         /// </summary>
-        /// <returns>新着イラスト数</returns>
+        /// <returns></returns>
         public int GetNewImageSize(){
             return this.GetSize(Type.new_illust, DummyParameter);
         }
 
         /// <summary>
-        /// 新着イラストを取得する
+        /// Get new images by page
         /// </summary>
-        /// <param name="page">取得するページ番号</param>
-        /// <returns>取得したイラストのリスト</returns>
+        /// <param name="page">The page from which to retrieve the new images</param>
+        /// <returns>An array of the new images</returns>
         public Image[] GetNewImages(int page)
         {
             return this.GetImages(Type.new_illust, DummyParameter, page);
@@ -462,23 +454,32 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// 与えられた名前のユーザを取得する
+        /// Finds all Pixiv users with a given <paramref name="name"/>. Note: The API fails to retrieve users that
+        /// have not yet submitted any works.
         /// </summary>
-        /// <param name="name">問い合わせるユーザの名前</param>
-        /// <param name="size">取得するユーザ数</param>
-        /// <returns>取得したユーザのリスト</returns>
-        public User[] FindUsers(string name, int size)
+        /// <param name="name">Name of the users to search for</param>
+        /// <param name="size">maximum amount of users returned</param>
+        /// <param name="exactMatch">Whether the name of the user should be an exact match</param>
+        /// <returns>An array of found <see cref="User"/>, at maximum <paramref name="size"/> large.</returns>
+        public User[] FindUsers(string name, int size = int.MaxValue, bool exactMatch = false)
         {
             List<User> ret = new List<User>();
-            string param = String.Format("nick={0}", Uri.EscapeUriString(name));
+            string param = String.Format("s_mode=s_usr&i=0&nick={0}", Uri.EscapeUriString(name));
+            if (exactMatch)
+                param += "&nick_mf=1";
+
             for (int i = 0; true; i++)
             {
-                User[] sub = this.GetUsers(Type.search, param, i);
+                User[] sub = this.GetUsers(Type.search_user, param, i);
                 if (sub.Length == 0)
                     break;
+
                 ret.AddRange(sub);
+
+                if (ret.Count > size)
+                    break;
             }
-            return ret.ToArray();
+            return ret.Take(size).ToArray();
         }
 
         /// <summary>
@@ -504,14 +505,24 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// 指定したユーザの投稿イラストを取得する
+        /// Returns all images of the specified user's page.
         /// </summary>
-        /// <param name="userId">ユーザ ID</param>
-        /// <param name="page">ページ数</param>
-        /// <returns>指定したユーザ ID を持つユーザの投稿イラスト</returns>
+        /// <param name="userId">The user from which to select the images</param>
+        /// <param name="page">The page from which to select the images</param>
+        /// <returns>A </returns>
         public Image[] GetImages(int userId, int page)
         {
             return this.GetImagesByUserId(Type.member_illust, userId, page);
+        }
+
+        /// <summary>
+        /// Returns all the images by a specified user.
+        /// </summary>
+        /// <param name="userId">The user from which to select the images</param>
+        /// <returns>An array of all images by the user</returns>
+        public Image[] GetImages(int userId)
+        {
+            return null;
         }
 
         /// <summary>
@@ -630,7 +641,7 @@ namespace PixivAPIWrapper
         {
             int ret = -1;
 
-            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}{1}.php?{2}&{3}={4}&c_mode=count", BaseURL, type.ToString(), param, this.SessionID, this.session));
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}{1}.php?{2}&{3}={4}&c_mode=count", BaseURL, type.ToString(), param, this.SessionID, this.Session));
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             Stream str = res.GetResponseStream();
             StreamReader strr = new StreamReader(str, UTF8);
@@ -652,17 +663,18 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// 画像に関する情報を取得する
+        /// Internal function to retrieve an array of <see cref="Image"/> based on the passed <paramref name="param"/> 
+        /// and the search <paramref name="type"/>.
         /// </summary>
-        /// <param name="type">取得する画像の種類</param>
-        /// <param name="param">問合せ用パラメータ</param>
-        /// <param name="page">取得するページ</param>
-        /// <returns>取得した画像のリスト</returns>
+        /// <param name="type">The search type to look for</param>
+        /// <param name="param">Specific Pixiv API parameters to include in the search</param>
+        /// <param name="page">The requested page number</param>
+        /// <returns>An array of <see cref="Image"/> that match this description</returns>
         private Image[] GetImages(Type type, string param, int page)
         {
             List<Image> ret = new List<Image>();
             Regex reg = new Regex("\" \"");
-            string reqUrl = String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.session, page);
+            string reqUrl = String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.Session, page);
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(reqUrl);            
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             Stream str = res.GetResponseStream();
@@ -681,11 +693,11 @@ namespace PixivAPIWrapper
                     Image image;
                     if (!row[19].Equals(""))
                     {
-                        image = new Manga(this, row);
+                        image = new Manga(row);
                     }
                     else
                     {
-                        image = new Illust(this, row);
+                        image = new Illust(row);
                     }
                     ret.Add(image);
                 }
@@ -714,7 +726,7 @@ namespace PixivAPIWrapper
         {
             List<Novel> ret = new List<Novel>();
             Regex reg = new Regex("\" \"");
-            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.session, page));
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.Session, page));
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             Stream str = res.GetResponseStream();
             StreamReader strr = new StreamReader(str, UTF8);
@@ -772,7 +784,8 @@ namespace PixivAPIWrapper
         private User[] GetUsers(Type type, string param, int page)
         {
             List<User> ret = new List<User>();
-            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.session, page));
+            String url = String.Format("{0}{1}.php?{2}&{3}={4}&p={5}", BaseURL, type.ToString(), param, SessionID, this.Session, page);
+            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url);
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             Stream str = res.GetResponseStream();
             StreamReader strr = new StreamReader(str, UTF8);

@@ -27,7 +27,7 @@ namespace PixivAPIWrapper
         public Uri TextURL { get; protected set; }
 
         public Novel(PixivAPI api, string[] data)
-            : base(api, data)
+            : base(data)
         {
             this.IsDefaultCover = true;
             if (!data[2].Equals("0"))

@@ -6,9 +6,9 @@ using System.Text;
 namespace PixivAPIWrapper
 {
     /// <summary>
-    /// 「イラスト」「マンガ」など、画像作品を表す基底クラスです。
+    /// Abstract parent for the various Image types on Pixiv
     /// </summary>
-    public class Image : Item
+    public abstract class Image : Item
     {
         public string Ext { get; protected set; }
         public string Server { get; protected set; }
@@ -17,21 +17,14 @@ namespace PixivAPIWrapper
         public string Tool { get; protected set; }
         public Uri ImageURL { get; protected set; }
 
-        public Image(PixivAPI api, string[] data) : base(api, data)
-        {
-            
+        public Image(string[] data) : base(data)
+        {            
             this.Ext = data[2];
             this.Server = data[4];
             this.ThumbURL = new Uri(data[6]);
             this.MobileURL = new Uri(data[9]);
             this.Tool = data[14];
-            this.Url = new Uri(String.Format("http://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}", this.Id));
-            
-        }
-
-        public User GetAuthor()
-        {
-            return this.Api.FindUser(this.AuthorId, this.AuthorName);
+            this.Url = new Uri(String.Format("http://www.pixiv.net/member_illust.php?mode=medium&illust_id={0}", this.Id));            
         }
     }
 }

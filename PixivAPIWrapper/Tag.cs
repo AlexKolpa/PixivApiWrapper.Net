@@ -10,13 +10,11 @@ namespace PixivAPIWrapper
     /// </summary>
     public class Tag
     {
-        private readonly string BaseUrl = "http://dic.pixiv.net/a/";
-        private readonly PixivAPI Api;
+        private const string BaseUrl = "http://dic.pixiv.net/a/";        
         private readonly string TagName;
 
-        public Tag(PixivAPI api, string tag)
+        public Tag(string tag)
         {
-            this.Api = api;
             this.TagName = tag;
         }
 
@@ -25,6 +23,7 @@ namespace PixivAPIWrapper
             return this.TagName;
         }
 
+        //TODO: Probably dont need this fuction
         /// <summary>
         /// このタグと同名の百科事典記事が存在するかどうか確かめます
         /// </summary>
@@ -38,9 +37,9 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// このタグの百科事典のURLを返します
+        /// Returns an Uri to the Pixiv encyclopedia
         /// </summary>
-        /// <returns>タグの百科事典のURL</returns>
+        /// <returns>Pixiv encyclopedia Uri</returns>
         public Uri GetDictionaryURL()
         {
             return new Uri(String.Format("{0}{1}", BaseUrl, this.TagName));

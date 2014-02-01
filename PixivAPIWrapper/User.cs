@@ -15,9 +15,15 @@ namespace PixivAPIWrapper
         public string Name { get; private set; }
         public Uri MobileURL { get; private set; }
         public string Ename { get; private set; }
+        public Uri Thumbnail { get; private set; }
 
         public User(PixivAPI api, string[] data)
         {
+            this.Api = api;
+            Id = int.Parse(data[1]);
+            Name = data[5];
+            Thumbnail = new Uri(data[6]);
+            Ename = data[24];
         }
 
         /// <summary>

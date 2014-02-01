@@ -16,8 +16,8 @@ namespace PixivAPIWrapper
         public Uri[] ImageURLs { get; protected set; }
         public int Pages { get; protected set; }
 
-        public Manga(PixivAPI api, string[] data)
-            : base(api, data)
+        public Manga(string[] data)
+            : base(data)
         {
             this.Pages = int.Parse(data[19]);
 

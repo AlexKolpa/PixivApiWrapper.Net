@@ -6,11 +6,10 @@ using System.Text;
 namespace PixivAPIWrapper
 {
     /// <summary>
-    /// Pixivでの、「イラスト」「マンガ」「小説」などの作品アイテムすべての基底になるクラスです。
+    /// A base class used for Illustrations, Images and Novels
     /// </summary>
     public class Item
     {
-        protected readonly PixivAPI Api;
         public int Id { get; protected set; }
         public int AuthorId { get; protected set; }
         public string Title { get; protected set; }
@@ -23,14 +22,9 @@ namespace PixivAPIWrapper
         public string Caption { get; protected set; }
         public Uri Url { get; protected set; }
 
-        public Item(PixivAPI api, string[] data) 
+        public Item(string[] data) 
         {
-            this.Api = api;
             this.Id = int.Parse(data[0]);
-            if (this.Id == 0)
-            {
-                throw new AccessAuthorizationException("参照権限がありません。マイピク限定公開のアイテムか、非公開のアイテムか、あるいは削除されたアイテムである可能性があります。");
-            }
             this.AuthorId = int.Parse(data[1]);
             this.Title = data[3];
             this.AuthorName = data[5];
@@ -41,7 +35,7 @@ namespace PixivAPIWrapper
             string[] tags_tmp = tags_org.Split(',');
             foreach (string tag_s in tags_tmp)
             {
-                Tag tag = new Tag(this.Api, tag_s);
+                Tag tag = new Tag(tag_s);
                 tags.Add(tag);
             }
             this.Tags = tags.ToArray();

@@ -10,7 +10,7 @@ namespace PixivAPIWrapper
     /// <summary>
     /// A helper class for the construction of Pixiv objects since everything gets passed around as string arrays
     /// </summary>
-    class PixivObjectFactory
+    public class PixivObjectFactory
     {
         internal class ItemTransferObject
         {
@@ -24,6 +24,7 @@ namespace PixivAPIWrapper
             public int Point { get; set; }
             public int Views { get; set; }
             public string Caption { get; set; }
+            public int Bookmarks { get; set; }
         }
 
         internal class IllustrationTransferObject : ItemTransferObject
@@ -53,7 +54,7 @@ namespace PixivAPIWrapper
             public Uri TextUrl { get; set; }
         }
 
-        internal static User CreateUser(string[] userData)
+        public static User CreateUser(string[] userData)
         {
             int id = int.Parse(userData[1]);
             string name = userData[5];
@@ -63,15 +64,15 @@ namespace PixivAPIWrapper
             return new User(id, name, null, ename, thumbnail);
         }
 
-        internal static Novel CreateNovel(string[] novelData)
+        public static Novel CreateNovel(string[] novelData)
         {
             NovelTransferObject obj = new NovelTransferObject();
             SetNovelValues(novelData, obj);
             
             return new Novel(obj);
         }
-        
-        internal static Illustration CreateIllust(string[] illustData)
+
+        public static Illustration CreateIllust(string[] illustData)
         {
             IllustrationTransferObject obj = new IllustrationTransferObject();
             SetIllustrationValues(illustData, obj);
@@ -80,7 +81,7 @@ namespace PixivAPIWrapper
             return new Illustration(obj);
         }
 
-        internal static Manga CreateManga(string[] mangaData)
+        public static Manga CreateManga(string[] mangaData)
         {
             MangaTransferObject obj = new MangaTransferObject();
             SetMangaValues(mangaData, obj);
@@ -162,6 +163,7 @@ namespace PixivAPIWrapper
             obj.Point = (!data[16].Equals("")) ? int.Parse(data[16]) : 0;
             obj.Views = (!data[17].Equals("")) ? int.Parse(data[17]) : 0;
             obj.Caption = data[18];
+            obj.Bookmarks = (!data[22].Equals("")) ? int.Parse(data[22]) : 0;
         }
         #endregion
     }

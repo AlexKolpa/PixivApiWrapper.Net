@@ -91,7 +91,7 @@ namespace PixivAPIWrapper
             Cookie result = null;
             foreach (Cookie cookie in cookieJar.GetCookies(new Uri(BasePixivUrl)))
             {
-                if (cookie.Name == "PHPSESSID")
+                if (cookie.Name == SessionID && cookie.Value.Contains('_'))
                 {
                     result = cookie;
                     break;
@@ -517,16 +517,6 @@ namespace PixivAPIWrapper
         }
 
         /// <summary>
-        /// Returns all the images by a specified user.
-        /// </summary>
-        /// <param name="userId">The user from which to select the images</param>
-        /// <returns>An array of all images by the user</returns>
-        public Illustration[] GetAllImages(int userId)
-        {
-            return null;
-        }
-
-        /// <summary>
         /// 指定したユーザーの投稿小説数を取得する
         /// </summary>
         /// <param name="userId">ユーザーID</param>
@@ -546,7 +536,6 @@ namespace PixivAPIWrapper
         {
             return this.GetNovelsByUserId(Type.member_novel, userId, page);
         }
-
 
         /// <summary>
         /// 指定したユーザの MyPixiv ユーザ数を取得する
